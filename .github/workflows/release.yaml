@@ -40,9 +40,9 @@ jobs:
           YAML="image.yaml"
           containerfile="Containerfile"
 
-          echo "name=$(grep '^name:' "$YAML" | sed 's/name:[[:space:]]*//' | tr -d '\"' | tr -d \"'\")" >> "$GITHUB_OUTPUT"
-          echo "version=$(grep '^version:' "$YAML" | sed 's/version:[[:space:]]*//' | tr -d '\"' | tr -d \"'\")" >> "$GITHUB_OUTPUT"
-          echo "registry=$(grep '^registry:' "$YAML" | sed 's/registry:[[:space:]]*//' | tr -d '\"' | tr -d \"'\")" >> "$GITHUB_OUTPUT"
+          echo "name=$(grep '^name:' "$YAML" | sed 's/name:[[:space:]]*//' | tr -d '"' | tr -d "'")" >> "$GITHUB_OUTPUT"
+          echo "version=$(grep '^version:' "$YAML" | sed 's/version:[[:space:]]*//' | tr -d '"' | tr -d "'")" >> "$GITHUB_OUTPUT"
+          echo "registry=$(grep '^registry:' "$YAML" | sed 's/registry:[[:space:]]*//' | tr -d '"' | tr -d "'")" >> "$GITHUB_OUTPUT"
           echo "containerfile=$containerfile" >> "$GITHUB_OUTPUT"
 
           platforms=$(grep '^platforms:' "$YAML" | sed 's/platforms:[[:space:]]*//' | tr -d '"' | tr -d "'")
