@@ -1,0 +1,5 @@
+---
+name: cobbleverse
+version: 1.21.1
+registry: oci://ghcr.io/andreaswachs/cobbleverse
+platforms: linux/arm64,linux/amd64
