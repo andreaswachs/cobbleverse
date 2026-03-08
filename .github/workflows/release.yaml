@@ -45,7 +45,7 @@ jobs:
           echo "registry=$(grep '^registry:' "$YAML" | sed 's/registry:[[:space:]]*//' | tr -d '\"' | tr -d \"'\")" >> "$GITHUB_OUTPUT"
           echo "containerfile=$containerfile" >> "$GITHUB_OUTPUT"
 
-          platforms=$(grep '^platforms:' "$YAML" | sed 's/platforms:[[:space:]]*//' | tr -d '\"' | tr -d "\'")
+          platforms=$(grep '^platforms:' "$YAML" | sed 's/platforms:[[:space:]]*//' | tr -d '"' | tr -d "'")
           echo "platforms=${platforms:-linux/amd64}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push image
