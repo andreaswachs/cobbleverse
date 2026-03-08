@@ -42,7 +42,13 @@ jobs:
 
           echo "name=$(grep '^name:' "$YAML" | sed 's/name:[[:space:]]*//' | tr -d '"' | tr -d "'")" >> "$GITHUB_OUTPUT"
           echo "version=$(grep '^version:' "$YAML" | sed 's/version:[[:space:]]*//' | tr -d '"' | tr -d "'")" >> "$GITHUB_OUTPUT"
-          echo "registry=$(grep '^registry:' "$YAML" | sed 's/registry:[[:space:]]*//' | tr -d '"' | tr -d "'")" >> "$GITHUB_OUTPUT"
+
+          # Extract registry and construct image tag
+          registry_raw=$(grep '^registry:' "$YAML" | sed 's/registry:[[:space:]]*//' | tr -d '"' | tr -d "'")
+          registry_host=$(echo "$registry_raw" | sed 's|oci://||' | sed 's|/[^/]*$||')
+          echo "registry=$registry_raw" >> "$GITHUB_OUTPUT"
+          echo "registry_host=$registry_host" >> "$GITHUB_OUTPUT"
+
           echo "containerfile=$containerfile" >> "$GITHUB_OUTPUT"
 
           platforms=$(grep '^platforms:' "$YAML" | sed 's/platforms:[[:space:]]*//' | tr -d '"' | tr -d "'")
@@ -57,14 +63,14 @@ jobs:
           push: true
           load: false
           tags: |
-            ghcr.io/${{ github.repository }}/${{ steps.meta.outputs.name }}:${{ steps.meta.outputs.version }}
+            ${{ steps.meta.outputs.registry_host }}/${{ steps.meta.outputs.name }}:${{ steps.meta.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/${{ steps.meta.outputs.name }}:${{ steps.meta.outputs.version }}'
+          image-ref: '${{ steps.meta.outputs.registry_host }}/${{ steps.meta.outputs.name }}:${{ steps.meta.outputs.version }}'
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
