@@ -29,6 +29,18 @@ FROM alpine:3
 
 ARG COBBLEVERSE_VERSION=1.7.3
 ARG MINECRAFT_VERSION=1.21.1
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+LABEL org.opencontainers.image.title="Cobbleverse" \
+      org.opencontainers.image.description="Cobbleverse Minecraft modpack Fabric server" \
+      org.opencontainers.image.url="https://github.com/andreaswachs/cobbleverse" \
+      org.opencontainers.image.source="https://github.com/andreaswachs/cobbleverse" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}"
 
 RUN apk add --no-cache \
     openjdk21-jre \

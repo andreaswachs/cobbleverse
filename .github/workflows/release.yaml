@@ -17,6 +17,9 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: [validate]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,8 +65,13 @@ jobs:
           platforms: ${{ steps.meta.outputs.platforms }}
           push: true
           load: false
+          provenance: false
           tags: |
             ${{ steps.meta.outputs.registry_host }}/${{ steps.meta.outputs.name }}:${{ steps.meta.outputs.version }}
+          build-args: |
+            BUILD_DATE=${{ github.event.repository.updated_at }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.meta.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
