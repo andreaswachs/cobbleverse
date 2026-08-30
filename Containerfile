@@ -1,13 +1,13 @@
 # Stage 1: Download and process the modpack
 FROM alpine:3 AS builder
 
-ARG COBBLEVERSE_VERSION=1.7.3
+ARG COBBLEVERSE_VERSION=1.7.42
 ARG MINECRAFT_VERSION=1.21.1
 ARG FABRIC_LOADER_VERSION=0.18.4
 ARG FABRIC_INSTALLER_VERSION=1.1.1
-ARG COBBLEVERSE_MRPACK_ID=Cg3gXABt
+ARG COBBLEVERSE_MRPACK_ID=4SKGla61
 
-RUN apk add --no-cache jq wget unzip
+RUN apk add --no-cache jq wget unzip zip
 
 WORKDIR /build
 RUN mkdir -p server/mods
@@ -22,12 +22,12 @@ RUN wget -O modpack.mrpack \
 
 # Install server-side mods and configs from the mrpack
 COPY install-mrpack.sh .
-RUN chmod +x install-mrpack.sh && ./install-mrpack.sh modpack.mrpack server
+RUN chmod +x install-mrpack.sh && ./install-mrpack.sh modpack.mrpack server "${MINECRAFT_VERSION}"
 
 # Stage 2: Runtime image
 FROM alpine:3
 
-ARG COBBLEVERSE_VERSION=1.7.3
+ARG COBBLEVERSE_VERSION=1.7.42
 ARG MINECRAFT_VERSION=1.21.1
 ARG BUILD_DATE
 ARG VCS_REF

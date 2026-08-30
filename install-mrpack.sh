@@ -7,9 +7,10 @@ set -e
 
 MRPACK_FILE="$1"
 SERVER_DIR="$2"
+MC_VERSION="${3:-1.21.1}"
 
 if [ -z "$MRPACK_FILE" ] || [ -z "$SERVER_DIR" ]; then
-    echo "Usage: install-mrpack.sh <mrpack-file> <server-dir>"
+    echo "Usage: install-mrpack.sh <mrpack-file> <server-dir> [mc-version]"
     exit 1
 fi
 
@@ -68,8 +69,9 @@ sound-physics-remastered-*.jar
 moreculling-*.jar
 infinite-music-*.jar
 MusicNotification-*.jar
+musicnotification-*.jar
 Ping-Wheel-*.jar
-particle-rain-*.jar
+particlerain-*.jar
 paginatedadvancements-*.jar
 notenoughcrashes-*.jar
 respackopts-*.jar
@@ -78,6 +80,11 @@ BetterF1-*.jar
 BetterThirdPerson-*.jar
 MouseTweaks-*.jar
 EuphoriaPatcher-*.jar
+BadOptimizations-*.jar
+catchindicator-*.jar
+NoChatRestrictions-*.jar
+particle_core-*.jar
+particular-*.jar
 "
 
 cleaned=0
@@ -91,5 +98,36 @@ for pattern in $CLIENT_ONLY_PATTERNS; do
     done
 done
 echo "    Removed $cleaned client-only mod(s)"
+
+# Strip c2me natives-math submodule (requires Java 25, conflicts with Cobblemon's Java 21 pin)
+# ponytail: c2me still works without it, just loses native math optimizations
+_c2me_jar=$(ls "$SERVER_DIR/mods/c2me-"*.jar 2>/dev/null | head -1)
+if [ -n "$_c2me_jar" ]; then
+    echo "==> Stripping c2me natives-math submodule (Java 25 requirement)..."
+    zip -q -d "$_c2me_jar" "META-INF/jars/c2me-fabric-opts-natives-math-*.jar" 2>/dev/null && echo "    Done" || echo "    No natives-math submodule found"
+fi
+
+# Download server-side performance mods
+download_perf_mod() {
+    _name="$1" _pid="$2" _glob="$3"
+    echo "==> Replacing with latest $_name..."
+    # ponytail: rm old JAR by glob, if glob misses old versions remain but Fabric picks latest
+    rm -f "$SERVER_DIR/mods/$_glob" 2>/dev/null || true
+    _info=$(wget -qO- "https://api.modrinth.com/v2/project/${_pid}/version?loaders=[%22fabric%22]&game_versions=[%22${MC_VERSION}%22]" \
+        | jq -r '[.[] | select(.version_type == "release")] | first | .files[] | select(.primary) | "\(.url)\t\(.filename)"')
+    if [ -z "$_info" ]; then
+        echo "    WARN: No release found for $_name (MC $MC_VERSION)"
+        return
+    fi
+    _url=$(printf '%s' "$_info" | cut -f1)
+    _file=$(printf '%s' "$_info" | cut -f2)
+    wget -q -O "$SERVER_DIR/mods/$_file" "$_url"
+    echo "    $_file"
+}
+
+download_perf_mod "Lithium" "gvQqBUqZ" "lithium-*.jar"
+download_perf_mod "FerriteCore" "uXXizFIs" "ferritecore-*.jar"
+download_perf_mod "ModernFix" "nmDcB62a" "modernfix-*.jar"
+download_perf_mod "ServerCore" "4WWQxlQP" "servercore-*.jar"
 
 echo "==> Modpack installation complete"
